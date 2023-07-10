@@ -1,7 +1,18 @@
 #include <stdio.h>
 #include <stdbool.h>
+#include <pthread.h>
+#include <stdlib.h>
 
 #define UPPER_LIMIT 100000
+#define THREADS 8
+
+typedef struct {
+    int id;
+    int start;
+    int end;
+} ThreadConfig;
+
+int total = 0;
 
 bool is_prime(int number) {
     // Common occurences
@@ -16,16 +27,50 @@ bool is_prime(int number) {
     return true;
 }
 
-int main() {
-    int found = 0;
+void* single(void* arg) {
+    ThreadConfig* args = (ThreadConfig*) arg;
 
-    for(int i = 1; i < UPPER_LIMIT; i++) {
+    printf("Thread #%d started! (%i -> %i)\n", args -> id, args -> start, args -> end);
+
+    int found = 0;
+    for(int i = args -> start; i < args -> end; i++) {
         if(is_prime(i)) {
             found++;
-            printf("%i is prime!\n", i);
+            // printf("[%i] %i is prime!\n", args -> id, found);
+            // ^ Disabled to prevent printf overhead
         }
     }
 
-    printf("%i prime numbers found between 1 and %i\n", found, UPPER_LIMIT);
+
+    printf("Thread #%i finished (found %i)\n", args -> id, found);
+    total += found;
+    return NULL;
+}
+
+int main() {
+
+    int id = 0;
+    int last_limit = UPPER_LIMIT;
+
+    pthread_t threads[THREADS];
+
+    for(int i = UPPER_LIMIT - (UPPER_LIMIT / THREADS); i >= 0; i -= UPPER_LIMIT / THREADS) {
+        ThreadConfig* tc = (ThreadConfig *) malloc(sizeof(ThreadConfig));
+
+        tc -> id = id;
+        tc -> start = i;
+        tc -> end = last_limit;
+
+        pthread_create(&threads[id], NULL, single, (void*) tc);
+
+        ++id;
+        last_limit = i;
+    }
+
+    for(int i = 0; i < THREADS; i++) {
+        pthread_join(threads[i], NULL);
+    }
+
+    printf("\nDone! All threads found %i primes in total.\n", total);
     return 0;
 }

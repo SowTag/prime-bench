@@ -1,7 +1,6 @@
 # prime-bench
 Simple C program that calculates all prime numbers up to an upper bound.
-Use it to measure integer calculation speeds on your CPU or play around. Only loads a single core.
-
+Use it to measure integer calculation speeds on your CPU or play around. Can load multiple cores through multiple threads.
 
 ## Building
 You can build with:
@@ -18,10 +17,17 @@ clang benchmark.c -o benchmark
 ```
 
 ## Changing the upper bound
-Edit the `benchmark.c` file at line 4:
+Edit the `benchmark.c` file at line 6:
 ```c
 #define UPPER_LIMIT 100000
 ```
 Replace `100000` with your upper limit of choice.
 Because the program uses an int as counter the max upper limit is 2^31 - 1 (~2.1 billion).
-Finally, rebuild.
+
+You can also change the thread count on line 7:
+```c
+#define THREADS 8
+```
+Replace 8 with the number of threads you want.
+
+Have fun!
